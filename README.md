@@ -77,7 +77,7 @@ The objective of this project is to build an intelligent movie recommendation sy
 
 ## 🎬 Selected Movie Details
 
-![Selected Movie](screenshots/selected_movie.png)
+![Selected Movie Details](presentation/Screenshots/Selected%20Movie%20Details.png)
 
 ## ✨ Recommended Movies
 
