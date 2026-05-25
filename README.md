@@ -92,13 +92,13 @@ Movie-Recommendation-System/
 │
 ├── .streamlit/
 │   └── secrets.toml
-|
-|
+│
+│
 ├── datasets/                     
 │   ├── tmdb_5000_movies.csv
 │   └── tmdb_5000_credits.csv
-|
-|
+│
+│
 ├── presentation/           
 │   ├── Movie_Recommendation_System.pptx
 │   └── Screenshots/
@@ -155,7 +155,8 @@ After running, open the local URL displayed in the terminal.
 
 # 🌐 Deployment
 
-Deployed using Streamlit Community Cloud.
+Deployed using **Streamlit Community Cloud**.  
+👉 [Live Demo](https://movie-recommendation-system-vamsi-4403-1.streamlit.app/)
 
 ---
 
