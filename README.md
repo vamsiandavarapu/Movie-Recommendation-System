@@ -90,17 +90,31 @@ The objective of this project is to build an intelligent movie recommendation sy
 ```bash
 Movie-Recommendation-System/
 │
-├── app.py
-├── movie_dict.pkl
-├── similarity.pkl
-├── requirements.txt
-├── README.md
-│
 ├── .streamlit/
 │   └── secrets.toml
+|
+|
+├── datasets/                     
+│   ├── tmdb_5000_movies.csv
+│   └── tmdb_5000_credits.csv
+|
+|
+├── presentation/           
+│   ├── Movie_Recommendation_System.pptx
+│   └── Screenshots/
+│       ├── Selected Movies.png
+│       ├── Recommended Movies.png
 │
-├── screenshots/
-│   └── recommendations.png
+|
+├── Movie_Recommendation_System.ipynb
+├── README.md
+├── app.py
+├── movie_dict.pkl
+├── requirements.txt
+├── similarity.pkl
+│
+│
+
 ```
 
 ---
