@@ -25,14 +25,15 @@ The objective of this project is to build an intelligent movie recommendation sy
 
 # ✨ Features
 
-- ✅ Content-Based Movie Recommendation  
-- ✅ Interactive Streamlit Web Application  
-- ✅ Movie Posters using TMDb API  
-- ✅ Fast Recommendations using Precomputed Similarity Matrix  
-- ✅ Dropdown-Based Movie Selection  
-- ✅ Movie Details Preview  
-- ✅ Responsive Dark-Themed UI  
-- ✅ Optimized ML Architecture using Pickle Files
+✅ Content-Based Movie Recommendation  
+✅ Interactive Streamlit Web Application  
+✅ Movie Posters using TMDb API  
+✅ Fast Recommendations using Precomputed Similarity Matrix  
+✅ Dropdown-Based Movie Selection  
+✅ Movie Details Preview  
+✅ Responsive Dark-Themed UI  
+✅ Optimized ML Architecture using Pickle Files
+
 
 
 ---
