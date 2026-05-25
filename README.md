@@ -80,10 +80,6 @@ The objective of this project is to build an intelligent movie recommendation sy
 
 # 📷 Project Screenshots
 
-## 🏠 Home Page
-
-![Home](screenshots/home.png)
-
 ## 🎬 Selected Movie Details
 
 ![Selected Movie](screenshots/selected_movie.png)
