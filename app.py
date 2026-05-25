@@ -1,120 +1,245 @@
 import streamlit as st
+import pickle
 import pandas as pd
-import ast
 import requests
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
-st.set_page_config(page_title="Movie Recommendation System", page_icon="🎬", layout="wide")
+# PAGE CONFIG
+st.set_page_config(
+    page_title="Movie Recommendation System",
+    page_icon="🎬",
+    layout="wide"
+)
 
+# CUSTOM CSS
+st.markdown("""
+<style>
+.main {
+    background-color: #0E1117;
+    color: white;
+}
+
+h1, h2, h3, h4 {
+    color: white;
+}
+
+.stButton > button {
+    width: 100%;
+    border-radius: 10px;
+    height: 3em;
+    background-color: #E50914;
+    color: white;
+    font-size: 18px;
+    border: none;
+    font-weight: bold;
+}
+
+.stButton > button:hover {
+    background-color: #ff1e1e;
+    color: white;
+}
+
+.stSelectbox label {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.card {
+    background: rgba(255,255,255,0.06);
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 8px;
+    color: white;
+    text-align: center;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# LOAD PICKLE FILES
+movies_dict = pickle.load(open('movie_dict.pkl', 'rb'))
+movies = pd.DataFrame(movies_dict)
+similarity = pickle.load(open('similarity.pkl', 'rb'))
+
+# TMDB API KEY
 API_KEY = st.secrets["TMDB_API_KEY"]
 
-@st.cache_data
-def load_data():
-    movies = pd.read_csv("tmdb_5000_movies.csv")
-    credits = pd.read_csv("tmdb_5000_credits.csv")
-    movies = movies.merge(credits, on="title")
-    movies = movies[["movie_id", "title", "overview", "genres", "keywords", "cast", "crew"]]
-    return movies
+# SIDEBAR
+with st.sidebar:
 
-def convert(obj):
-    items = []
-    for i in ast.literal_eval(obj):
-        items.append(i["name"])
-    return items
+    st.title("🎬 Movie Recommendation System")
 
-def convert_cast(obj):
-    items = []
-    count = 0
-    for i in ast.literal_eval(obj):
-        if count < 3:
-            items.append(i["name"])
-            count += 1
-        else:
-            break
-    return items
+    st.markdown("---")
 
-def fetch_director(obj):
-    for i in ast.literal_eval(obj):
-        if i["job"] == "Director":
-            return [i["name"]]
-    return []
+    st.subheader("📌 About")
 
-@st.cache_data
-def prepare_data():
-    movies = load_data()
+    st.write("""
+    Select Movies & Discover Similar Movies You'll Love Instantly
+    """)
 
-    movies["genres"] = movies["genres"].apply(convert)
-    movies["keywords"] = movies["keywords"].apply(convert)
-    movies["cast"] = movies["cast"].apply(convert_cast)
-    movies["crew"] = movies["crew"].apply(fetch_director)
+    st.markdown("---")
 
-    movies["overview"] = movies["overview"].fillna("")
-    movies["overview"] = movies["overview"].apply(lambda x: x.split())
-    movies["cast"] = movies["cast"].apply(lambda x: [i.replace(" ", "") for i in x])
-    movies["genres"] = movies["genres"].apply(lambda x: [i.replace(" ", "") for i in x])
-    movies["keywords"] = movies["keywords"].apply(lambda x: [i.replace(" ", "") for i in x])
-    movies["crew"] = movies["crew"].apply(lambda x: [i.replace(" ", "") for i in x])
+    st.subheader("🧠 How It Works")
 
-    movies["tags"] = movies["overview"] + movies["genres"] + movies["keywords"] + movies["cast"] + movies["crew"]
-    movies["tags"] = movies["tags"].apply(lambda x: " ".join(x))
+    st.write("""
+    It recommends movies using:
+    - Cosine Similarity
+    - Count Vectorizer
+    - Genre Matching
+    - Cast & Keywords Analysis
+    """)
 
-    cv = CountVectorizer(max_features=5000, stop_words="english")
-    vectors = cv.fit_transform(movies["tags"]).toarray()
-    similarity = cosine_similarity(vectors)
+    st.markdown("---")
 
-    return movies, similarity
+    st.success("Developed by Vamsi Andavarapu")
 
+# FETCH MOVIE DETAILS
+def fetch_movie_details(title, movies):
 
-def fetch_poster(title, movies):
     idx = movies[movies["title"] == title].index[0]
     movie_id = movies.iloc[idx].movie_id
+
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={API_KEY}"
 
     try:
-        response = requests.get(url, timeout=20)
-        response.raise_for_status()
+        response = requests.get(url)
         data = response.json()
-        if data.get("poster_path"):
-            return "https://image.tmdb.org/t/p/w500/" + data["poster_path"]
-    except requests.exceptions.RequestException:
-        return "https://via.placeholder.com/500x750?text=No+Image"
 
-    return "https://via.placeholder.com/500x750?text=No+Image"
-def recommend(movie, movies, similarity):
-    movie = movie.lower()
+        poster = (
+            "https://image.tmdb.org/t/p/w500/" + data["poster_path"]
+            if data.get("poster_path")
+            else "https://via.placeholder.com/500x750?text=No+Image"
+        )
 
-    if movie not in movies["title"].str.lower().values:
-        return [], []
+        rating = data.get("vote_average", "N/A")
+        release_date = data.get("release_date", "N/A")
 
-    idx = movies[movies["title"].str.lower() == movie].index[0]
+        overview = data.get(
+            "overview",
+            "No overview available."
+        )
+
+        return poster, rating, release_date, overview
+
+    except:
+         return "https://via.placeholder.com/300x450?text=Error"
+
+
+# RECOMMEND FUNCTION
+def recommend(movie):
+
+    idx = movies[movies["title"] == movie].index[0]
     distances = similarity[idx]
-    movie_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
+
+    movie_list = sorted(
+        list(enumerate(distances)),
+        reverse=True,
+        key=lambda x: x[1]
+    )[1:6]
 
     recommended_movies = []
-    posters = []
 
     for i in movie_list:
+
         title = movies.iloc[i[0]].title
-        recommended_movies.append(title)
-        posters.append(fetch_poster(title, movies))
 
-    return recommended_movies, posters
+        poster, rating, release_date, overview = fetch_movie_details(
+            title,
+            movies
+        )
 
-st.title("🎬 Movie Recommendation System")
-st.write("Enter a movie name and get 5 similar movie recommendations.")
+        movie_data = {
+            "title": title,
+            "poster": poster,
+            "rating": rating,
+            "release_date": release_date,
+            "overview": overview
+        }
 
-movies, similarity = prepare_data()
-movie_name = st.text_input("Enter a movie name:")
+        recommended_movies.append(movie_data)
 
-if st.button("Recommend"):
-    titles, posters = recommend(movie_name, movies, similarity)
+    return recommended_movies
 
-    if titles:
-        cols = st.columns(5)
-        for i in range(5):
-            with cols[i]:
-                st.image(posters[i], use_container_width=True)
-                st.caption(titles[i])
-    else:
-        st.write("Sorry, we don't have related movies or information for this title.")
+# MAIN UI
+st.title("🎥 Movie Recommendation System")
+
+st.markdown("""
+### Discover Movies Similar to Your Favorites 🍿
+Select a movie from the dropdown and get recommendations instantly.
+""")
+
+movie_list = sorted(movies["title"].values)
+
+selected_movie = st.selectbox(
+    "🎬 Select a Movie",
+    movie_list
+)
+
+# SELECTED MOVIE DETAILS
+poster, rating, release_date, overview = fetch_movie_details(
+    selected_movie,
+    movies
+)
+
+st.markdown("---")
+
+st.subheader("🎞️ Selected Movie")
+
+col1, col2 = st.columns([1, 2])
+
+with col1:
+    st.image(
+        poster,
+        width="stretch"
+    )
+
+with col2:
+    st.markdown(f"## {selected_movie}")
+
+    st.markdown(f"⭐ Rating: **{rating}**")
+
+    st.markdown(f"📅 Release Date: **{release_date}**")
+
+    st.markdown("### Overview")
+
+    st.write(overview)
+
+# RECOMMEND BUTTON
+if st.button("Recommend Movies"):
+
+    with st.spinner("Finding similar movies..."):
+        recommendations = recommend(selected_movie)
+
+    st.success("Recommendations Generated Successfully!")
+
+    st.markdown("---")
+
+    st.subheader("✨ Recommended Movies")
+
+    cols = st.columns(5)
+
+    for idx, movie in enumerate(recommendations):
+
+        with cols[idx]:
+
+            st.image(
+                movie["poster"],
+                width="stretch"
+            )
+
+            st.markdown(
+                f"<div class='card'><h4>{movie['title']}</h4></div>",
+                unsafe_allow_html=True
+            )
+
+            st.markdown(f"⭐ Rating: **{movie['rating']}**")
+
+            st.markdown(f"📅 {movie['release_date']}")
+
+# FOOTER
+st.markdown("---")
+
+st.markdown("""
+<center>
+Made with ❤️ using Python, Streamlit and Machine Learning
+</center>
+""", unsafe_allow_html=True)
