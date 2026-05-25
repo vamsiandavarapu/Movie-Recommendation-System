@@ -81,7 +81,7 @@ The objective of this project is to build an intelligent movie recommendation sy
 
 ## ✨ Recommended Movies
 
-![Recommendations](screenshots/recommendations.png)
+![Recommended Movies](presentation/Screenshots/Recommended%20Movies.png)
 
 ---
 
