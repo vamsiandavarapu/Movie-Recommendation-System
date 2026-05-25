@@ -105,7 +105,7 @@ Movie-Recommendation-System/
 │       ├── Selected Movies.png
 │       ├── Recommended Movies.png
 │
-|
+│
 ├── Movie_Recommendation_System.ipynb
 ├── README.md
 ├── app.py
